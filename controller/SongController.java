@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +34,21 @@ public class SongController {
         return new ResponseEntity<Integer>(songRepository.findAll().size(),HttpStatus.OK);
     }
     
+    @PutMapping("/v1/song")
+    public ResponseEntity<Boolean> updateSong(@RequestBody SongRequest songRequest, HttpServletRequest httpServletRequest ){
+        if (songRequest!=null){
+            List<SongModel> existingSongModel = songRepository.findByTitle(songRequest.getTitle());
+            if(existingSongModel.size()!=0){
+            	existingSongModel.get(0).setGenre(songRequest.getGenre());
+            	songRepository.save(existingSongModel.get(0));
+                return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+            }else{
+                return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+            }
+        }
+        return new ResponseEntity<Boolean>(false, HttpStatus.BAD_REQUEST);
+    }
+    
     @PostMapping("/v1/song")
     public ResponseEntity<SongModel> addSong(@RequestBody SongRequest songRequest, HttpServletRequest httpServletRequest ){
         SongModel songModel = new  SongModel();
@@ -46,6 +62,8 @@ public class SongController {
         }
         return new ResponseEntity<>(songModel, HttpStatus.BAD_REQUEST);
     }
+    
+    
 
     private SongModel creatSongModel(SongRequest songRequest){
         return SongModel.builder()
